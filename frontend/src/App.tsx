@@ -11,6 +11,7 @@ import { DocumentView } from './components/document/DocumentView'
 import { AgentView } from './components/agent/AgentView'
 import { CollaborationView } from './components/collaboration/CollaborationView'
 import { AnalyticsView } from './components/analytics/AnalyticsView'
+import { SettingsView } from './components/settings/SettingsView'
 import { AlertTriangle } from 'lucide-react'
 
 function App() {
@@ -65,7 +66,11 @@ function App() {
   return (
     <div className="min-h-screen bg-dark-bg text-gray-100 flex flex-col">
       {/* 1. Navbar */}
-      <Navbar userDisplayName={userName || 'Atul'} onExit={handleLogout} />
+      <Navbar 
+        userDisplayName={userName || 'Atul'} 
+        onExit={handleLogout} 
+        onProfileClick={() => setActiveTab('Settings')}
+      />
 
       {/* Main layout container with sidebar + main content */}
       <div className="flex flex-1 relative">
@@ -99,6 +104,8 @@ function App() {
             <CollaborationView userName={userName} />
           ) : activeTab === 'Analytics' ? (
             <AnalyticsView token={token} />
+          ) : activeTab === 'Settings' ? (
+            <SettingsView token={token} />
           ) : (
             // Fallback content for other tabs (Placeholder pages for future phases)
             <div className="flex items-center justify-center h-[50vh]">

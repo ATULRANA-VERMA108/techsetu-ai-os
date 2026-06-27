@@ -167,14 +167,15 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
         if (value) {
           const chunkStr = decoder.decode(value, { stream: true })
           const lines = chunkStr.split('\n')
-          for (const line of lines) {
+          for (let i = 0; i < lines.length; i++) {
+            const line = lines[i]
             if (line.startsWith('event: error')) {
-              const nextLine = lines[lines.indexOf(line) + 1] || ''
+              const nextLine = lines[i + 1] || ''
               const errorMsg = nextLine.startsWith('data:') ? nextLine.substring(5).trim() : 'API key error or prompt block.'
               throw new Error(errorMsg)
             }
             if (line.startsWith('event: chunk')) {
-              const nextLine = lines[lines.indexOf(line) + 1] || ''
+              const nextLine = lines[i + 1] || ''
               if (nextLine.startsWith('data:')) {
                 const tokenText = nextLine.substring(5)
                 fullResponseText += tokenText

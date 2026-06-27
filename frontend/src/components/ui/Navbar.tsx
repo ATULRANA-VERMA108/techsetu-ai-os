@@ -4,9 +4,10 @@ import { Sparkles, Bell, User } from 'lucide-react'
 interface NavbarProps {
   userDisplayName?: string
   onExit?: () => void
+  onProfileClick?: () => void
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ userDisplayName = 'Atul', onExit }) => {
+export const Navbar: React.FC<NavbarProps> = ({ userDisplayName = 'Atul', onExit, onProfileClick }) => {
   return (
     <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/8 backdrop-blur-md px-6 py-4 flex items-center justify-between">
       {/* Brand / Logo */}
@@ -41,9 +42,13 @@ export const Navbar: React.FC<NavbarProps> = ({ userDisplayName = 'Atul', onExit
 
         {/* Profile Avatar placeholder */}
         <div className="flex items-center gap-2 pl-2 border-l border-gray-800">
-          <div className="w-8 h-8 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-ai-blue shadow-inner cursor-pointer hover:border-ai-blue/50 transition-colors">
+          <button
+            onClick={onProfileClick}
+            className="w-8 h-8 rounded-xl bg-gray-800 border border-gray-700 flex items-center justify-center text-ai-blue shadow-inner cursor-pointer hover:border-ai-blue/50 transition-colors focus:outline-none"
+            title="Open Settings"
+          >
             <User className="w-4 h-4" />
-          </div>
+          </button>
         </div>
       </div>
     </header>
