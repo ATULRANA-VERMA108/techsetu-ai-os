@@ -32,12 +32,25 @@ public class DocumentController {
 
     private final DocumentRepository documentRepository;
     private final DocumentChunkRepository documentChunkRepository;
+    private final org.springframework.data.mongodb.core.MongoTemplate mongoTemplate;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public DocumentController(DocumentRepository documentRepository,
-                              DocumentChunkRepository documentChunkRepository) {
+                              DocumentChunkRepository documentChunkRepository,
+                              org.springframework.data.mongodb.core.MongoTemplate mongoTemplate) {
         this.documentRepository = documentRepository;
         this.documentChunkRepository = documentChunkRepository;
+        this.mongoTemplate = mongoTemplate;
+
+        // Ensure Text Index exists on content field of document_chunks for ultra-fast native searches
+        try {
+            mongoTemplate.indexOps(DocumentChunk.class)
+                    .ensureIndex(new org.springframework.data.mongodb.core.index.TextIndexDefinition.TextIndexDefinitionBuilder()
+                            .onField("content")
+                            .build());
+        } catch (Exception e) {
+            System.err.println("Failed to ensure MongoDB text index: " + e.getMessage());
+        }
     }
 
     private String getCurrentUserEmail() {
@@ -137,13 +150,27 @@ public class DocumentController {
         }
 
         try {
-            List<DocumentChunk> chunks = documentChunkRepository.findByDocumentId(id);
-            if (chunks.isEmpty()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(Map.of("error", "No text indexed for this document."));
-            }
+            // Perform native MongoDB text search (utilizing index matching in milliseconds)
+            org.springframework.data.mongodb.core.query.TextQuery textQuery = 
+                    org.springframework.data.mongodb.core.query.TextQuery.queryText(
+                            org.springframework.data.mongodb.core.query.TextCriteria.forDefaultLanguage().matching(question)
+                    ).sortByScore();
+            textQuery.addCriteria(org.springframework.data.mongodb.core.query.Criteria.where("documentId").is(id));
+            textQuery.limit(3);
 
-            List<DocumentChunk> topChunks = findTopChunks(chunks, question, 3);
+            List<DocumentChunk> topChunks = mongoTemplate.find(textQuery, DocumentChunk.class);
+
+            // Fallback: If no indexed match is found, retrieve the first few chunks of the document
+            if (topChunks.isEmpty()) {
+                List<DocumentChunk> allChunks = documentChunkRepository.findByDocumentId(id);
+                if (allChunks.isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(Map.of("error", "No text indexed for this document."));
+                }
+                allChunks.sort(Comparator.comparingInt(DocumentChunk::getChunkIndex));
+                int limit = Math.min(3, allChunks.size());
+                topChunks = allChunks.subList(0, limit);
+            }
 
             StringBuilder contextBuilder = new StringBuilder();
             List<String> sourcesList = new ArrayList<>();
