@@ -8,6 +8,7 @@ import {
   Sparkles, ListChecks, ChevronRight, Activity 
 } from 'lucide-react'
 import axios from 'axios'
+import { API_BASE_URL } from '../../config'
 
 interface AgentViewProps {
   token: string | null
@@ -54,7 +55,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
 
   const loadTasks = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/agents/tasks', {
+      const res = await axios.get(`${API_BASE_URL}/api/agents/tasks`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setTasks(res.data)
@@ -65,7 +66,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
 
   const loadSingleTask = async (id: string) => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/agents/tasks/${id}`, {
+      const res = await axios.get(`${API_BASE_URL}/api/agents/tasks/${id}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       
@@ -120,7 +121,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
     const customKey = localStorage.getItem('geminiApiKey') || ''
 
     try {
-      const res = await axios.post('http://localhost:8080/api/agents/tasks', { taskDescription: goal }, {
+      const res = await axios.post(`${API_BASE_URL}/api/agents/tasks`, { taskDescription: goal }, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-Gemini-Key': customKey

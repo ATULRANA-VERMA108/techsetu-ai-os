@@ -5,7 +5,7 @@ import { Input } from '../ui/Input'
 import { 
   Users, MessageSquare, Send, Radio, Activity, Cpu, Database 
 } from 'lucide-react'
-
+import { WS_BASE_URL } from '../../config'
 interface CollaborationViewProps {
   userName: string | null
 }
@@ -32,7 +32,7 @@ export const CollaborationView: React.FC<CollaborationViewProps> = ({ userName }
 
   useEffect(() => {
     // 1. Establish native HTML5 WebSocket connection
-    const socket = new WebSocket('ws://localhost:8080/ws')
+    const socket = new WebSocket(WS_BASE_URL)
     socketRef.current = socket
 
     socket.onopen = () => {

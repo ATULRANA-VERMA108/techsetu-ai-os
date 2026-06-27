@@ -4,6 +4,7 @@ import { Mail, Lock, User as UserIcon, X, Sparkles } from 'lucide-react'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import axios from 'axios'
+import { API_BASE_URL } from '../../config'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -28,14 +29,14 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, onSuccess
 
     try {
       if (activeTab === 'login') {
-        const res = await axios.post('http://localhost:8080/api/auth/login', {
+        const res = await axios.post(`${API_BASE_URL}/api/auth/login`, {
           email,
           password
         })
         const data = res.data
         onSuccess(data.token, data.name, data.email)
       } else {
-        await axios.post('http://localhost:8080/api/auth/signup', {
+        await axios.post(`${API_BASE_URL}/api/auth/signup`, {
           name,
           email,
           password

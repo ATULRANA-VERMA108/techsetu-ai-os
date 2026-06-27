@@ -8,6 +8,7 @@ import {
   HelpCircle, ChevronDown, ChevronUp, AlertCircle 
 } from 'lucide-react'
 import axios from 'axios'
+import { API_BASE_URL } from '../../config'
 
 interface DocumentViewProps {
   token: string | null
@@ -38,7 +39,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
 
   const loadDocuments = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/documents', {
+      const res = await axios.get(`${API_BASE_URL}/api/documents`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setDocuments(res.data)
@@ -67,7 +68,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
     formData.append('file', file)
 
     try {
-      const res = await axios.post('http://localhost:8080/api/documents/upload', formData, {
+      const res = await axios.post(`${API_BASE_URL}/api/documents/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
@@ -88,7 +89,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
   const handleDeleteDocument = async (e: React.MouseEvent, docId: string) => {
     e.stopPropagation()
     try {
-      await axios.delete(`http://localhost:8080/api/documents/${docId}`, {
+      await axios.delete(`${API_BASE_URL}/api/documents/${docId}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       const filtered = documents.filter(d => d.id !== docId)
@@ -113,7 +114,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
     const customKey = localStorage.getItem('geminiApiKey') || ''
 
     try {
-      const res = await axios.post(`http://localhost:8080/api/documents/${selectedDocId}/query`, { question }, {
+      const res = await axios.post(`${API_BASE_URL}/api/documents/${selectedDocId}/query`, { question }, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'X-Gemini-Key': customKey

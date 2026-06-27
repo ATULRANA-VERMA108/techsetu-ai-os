@@ -5,6 +5,7 @@ import {
   BarChart3, Activity, AlertTriangle, Bot, MessageSquare, FileText 
 } from 'lucide-react'
 import axios from 'axios'
+import { API_BASE_URL } from '../../config'
 
 interface AnalyticsViewProps {
   token: string | null
@@ -38,7 +39,7 @@ export const AnalyticsView: React.FC<AnalyticsViewProps> = ({ token }) => {
 
   const loadAnalytics = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/analytics', {
+      const res = await axios.get(`${API_BASE_URL}/api/analytics`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setData(res.data)

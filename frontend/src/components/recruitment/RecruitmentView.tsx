@@ -7,6 +7,7 @@ import {
   CheckCircle, AlertTriangle, HelpCircle
 } from 'lucide-react'
 import axios from 'axios'
+import { API_BASE_URL } from '../../config'
 
 interface RecruitmentViewProps {
   token: string | null
@@ -72,7 +73,7 @@ export const RecruitmentView: React.FC<RecruitmentViewProps> = ({ token }) => {
     const customKey = localStorage.getItem('geminiApiKey') || ''
 
     try {
-      const res = await axios.post('http://localhost:8080/api/recruitment/parse', formData, {
+      const res = await axios.post(`${API_BASE_URL}/api/recruitment/parse`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,

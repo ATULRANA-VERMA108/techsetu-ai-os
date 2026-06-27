@@ -7,6 +7,7 @@ import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { Loader } from '../ui/Loader'
 import axios from 'axios'
+import { API_BASE_URL } from '../../config'
 
 interface ChatViewProps {
   token: string | null
@@ -44,7 +45,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
 
   const loadConversations = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/chat/conversations', {
+      const res = await axios.get(`${API_BASE_URL}/api/chat/conversations`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setConversations(res.data)
@@ -59,7 +60,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
   const loadMessages = async (convId: string) => {
     setLoadingHistory(true)
     try {
-      const res = await axios.get(`http://localhost:8080/api/chat/conversations/${convId}/messages`, {
+      const res = await axios.get(`${API_BASE_URL}/api/chat/conversations/${convId}/messages`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setMessages(res.data)
@@ -90,7 +91,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
 
   const handleCreateConversation = async () => {
     try {
-      const res = await axios.post('http://localhost:8080/api/chat/conversations', { title: 'New Chat' }, {
+      const res = await axios.post(`${API_BASE_URL}/api/chat/conversations`, { title: 'New Chat' }, {
         headers: { Authorization: `Bearer ${token}` }
       })
       setConversations([res.data, ...conversations])
@@ -103,7 +104,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
   const handleDeleteConversation = async (e: React.MouseEvent, convId: string) => {
     e.stopPropagation()
     try {
-      await axios.delete(`http://localhost:8080/api/chat/conversations/${convId}`, {
+      await axios.delete(`${API_BASE_URL}/api/chat/conversations/${convId}`, {
         headers: { Authorization: `Bearer ${token}` }
       })
       const filtered = conversations.filter(c => c.id !== convId)
@@ -141,7 +142,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
     setMessages(prev => [...prev, dummyUserMsg])
 
     try {
-      const response = await fetch(`http://localhost:8080/api/chat/conversations/${activeConvId}/stream`, {
+      const response = await fetch(`${API_BASE_URL}/api/chat/conversations/${activeConvId}/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
