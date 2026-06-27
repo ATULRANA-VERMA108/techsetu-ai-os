@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react'
-import { Card } from '../ui/Card'
 import { Button } from '../ui/Button'
 import { Loader } from '../ui/Loader'
 import { Input } from '../ui/Input'

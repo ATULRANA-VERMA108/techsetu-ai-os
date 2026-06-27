@@ -4,7 +4,7 @@ import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
 import { 
   Key, KeyRound, Server, ShieldCheck, Database, RefreshCw, Trash2, Eye, EyeOff,
-  User as UserIcon, Bell, Settings as SettingsIcon, Info, Sun, Moon
+  User as UserIcon, Bell, Sun, Moon
 } from 'lucide-react'
 import axios from 'axios'
 import { API_BASE_URL } from '../../config'

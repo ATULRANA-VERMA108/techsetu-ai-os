@@ -70,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab = 'Dashboard', setAc
       {/* Bottom control */}
       <div className="flex flex-col gap-2 px-3 border-t border-gray-800/80 pt-6">
         <button 
-          onClick={() => setActiveTab('Settings')}
+          onClick={() => setActiveTab?.('Settings')}
           className={`flex items-center gap-4.5 px-4 py-3 rounded-xl transition-all cursor-pointer ${
             activeTab === 'Settings' 
               ? 'bg-ai-blue/10 text-ai-blue font-semibold border border-ai-blue/30 shadow-[0_0_15px_rgba(30,144,255,0.15)]' 
