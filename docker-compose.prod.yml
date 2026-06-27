@@ -1,0 +1,88 @@
+version: '3.8'
+
+services:
+  # 1. PostgreSQL Database
+  postgres:
+    image: postgres:15-alpine
+    container_name: techsetu-postgres-prod
+    environment:
+      POSTGRES_DB: techsetu_ai_os
+      POSTGRES_USER: techsetu
+      POSTGRES_PASSWORD: techsetu_password
+    volumes:
+      - postgres_prod_data:/var/lib/postgresql/data
+    networks:
+      - techsetu-network
+
+  # 2. MongoDB Database
+  mongodb:
+    image: mongo:6.0
+    container_name: techsetu-mongodb-prod
+    volumes:
+      - mongodb_prod_data:/data/db
+    networks:
+      - techsetu-network
+
+  # 3. Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: techsetu-redis-prod
+    networks:
+      - techsetu-network
+
+  # 4. Spring Boot Backend API
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: techsetu-backend-prod
+    depends_on:
+      - postgres
+      - mongodb
+      - redis
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/techsetu_ai_os
+      - SPRING_DATASOURCE_USERNAME=techsetu
+      - SPRING_DATASOURCE_PASSWORD=techsetu_password
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/techsetu_ai_os
+      - APP_JWT_SECRET=defaultSecretKeyForTestingWhichIsVeryLongAndSecure32BytesLong
+      - APP_JWT_EXPIRATION_MS=86400000
+      - APP_GEMINI_API_KEY=${GEMINI_API_KEY:-your_gemini_api_key_here}
+    networks:
+      - techsetu-network
+
+  # 5. FastAPI AI Service
+  ai-services:
+    build:
+      context: ./ai-services
+      dockerfile: Dockerfile
+    container_name: techsetu-ai-services-prod
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-your_gemini_api_key_here}
+    networks:
+      - techsetu-network
+
+  # 6. React Nginx Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: techsetu-frontend-prod
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - techsetu-network
+
+volumes:
+  postgres_prod_data:
+  mongodb_prod_data:
+
+networks:
+  techsetu-network:
+    driver: bridge

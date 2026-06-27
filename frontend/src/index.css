@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+@theme {
+  --color-dark-bg: #0B1020;
+  --color-dark-card: #111827;
+  --color-ai-blue: #3B82F6;
+  --color-ai-purple: #8B5CF6;
+  
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom global styles for glassmorphism and futuristic animations */
+@layer base {
+  body {
+    background-color: var(--color-dark-bg);
+    color: #f3f4f6;
+    font-family: var(--font-sans);
+    overflow-x: hidden;
+  }
+}
+
+.glass-panel {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.ai-gradient-text {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ai-gradient-bg {
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+}
+
+.ai-glow {
+  box-shadow: 0 0 25px rgba(139, 92, 246, 0.15);
+}

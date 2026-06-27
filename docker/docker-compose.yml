@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: techsetu-postgres
+    environment:
+      POSTGRES_USER: techsetu
+      POSTGRES_PASSWORD: techsetu_password
+      POSTGRES_DB: techsetu_ai_os
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - techsetu-network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7.0
+    container_name: techsetu-mongodb
+    environment:
+      MONGO_INITDB_DATABASE: techsetu_ai_os
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - techsetu-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: techsetu-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - techsetu-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mongodb_data:
+  redis_data:
+
+networks:
+  techsetu-network:
+    driver: bridge
