@@ -99,6 +99,13 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ userName, onTabCha
     }
   ]
 
+  const getGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'Good Morning'
+    if (hour < 17) return 'Good Afternoon'
+    return 'Good Evening'
+  }
+
   return (
     <div className="flex flex-col gap-6 w-full text-left">
       
@@ -106,7 +113,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ userName, onTabCha
       <div className="glass-panel p-6 rounded-2xl border border-white/5 bg-gradient-to-r from-dark-card/50 via-ai-purple/5 to-ai-blue/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-extrabold text-white flex items-center gap-2">
-            Good Morning, {userName || 'Atul'} 👋
+            {getGreeting()}, {userName || 'Atul'} 👋
           </h2>
           <p className="text-gray-400 text-sm mt-1">
             Here is your AI productivity overview and system diagnostics report for today.

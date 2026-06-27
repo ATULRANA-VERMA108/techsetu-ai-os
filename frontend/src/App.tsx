@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { LandingPage } from './components/landing/LandingPage'
 import { Navbar } from './components/ui/Navbar'
 import { Sidebar } from './components/ui/Sidebar'
@@ -22,6 +22,24 @@ function App() {
   const [token, setToken] = useState<string | null>(localStorage.getItem('jwtToken'))
   const [userName, setUserName] = useState<string | null>(localStorage.getItem('userName'))
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false)
+
+  // Theme state persisted in localStorage
+  const [theme, setTheme] = useState<'dark' | 'light'>((localStorage.getItem('appTheme') as 'dark' | 'light') || 'dark')
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
+    setTheme(nextTheme)
+    localStorage.setItem('appTheme', nextTheme)
+  }
+
+  // Effect to load initial theme state on html classlist
+  useEffect(() => {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light-mode')
+    } else {
+      document.documentElement.classList.remove('light-mode')
+    }
+  }, [theme])
 
   const handleLaunch = () => {
     if (token) {
@@ -68,8 +86,10 @@ function App() {
       {/* 1. Navbar */}
       <Navbar 
         userDisplayName={userName || 'Atul'} 
-        onExit={handleLogout} 
+        onLogout={handleLogout} 
         onProfileClick={() => setActiveTab('Settings')}
+        onThemeToggle={toggleTheme}
+        currentTheme={theme}
       />
 
       {/* Main layout container with sidebar + main content */}
@@ -105,7 +125,12 @@ function App() {
           ) : activeTab === 'Analytics' ? (
             <AnalyticsView token={token} />
           ) : activeTab === 'Settings' ? (
-            <SettingsView token={token} />
+            <SettingsView 
+              token={token} 
+              onProfileUpdate={(newName) => setUserName(newName)} 
+              currentTheme={theme}
+              onThemeToggle={toggleTheme}
+            />
           ) : (
             // Fallback content for other tabs (Placeholder pages for future phases)
             <div className="flex items-center justify-center h-[50vh]">

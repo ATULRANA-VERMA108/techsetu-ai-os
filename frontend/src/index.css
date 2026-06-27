@@ -39,3 +39,66 @@
 .ai-glow {
   box-shadow: 0 0 25px rgba(139, 92, 246, 0.15);
 }
+
+/* Light Mode Overrides */
+.light-mode {
+  --color-dark-bg: #F3F4F6;
+  --color-dark-card: #FFFFFF;
+  background-color: #F3F4F6 !important;
+  color: #1F2937 !important;
+}
+
+.light-mode body {
+  background-color: #F3F4F6 !important;
+  color: #1F2937 !important;
+}
+
+.light-mode .glass-panel {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  color: #1F2937 !important;
+}
+
+.light-mode .text-gray-400,
+.light-mode .text-gray-500 {
+  color: #4B5563 !important;
+}
+
+.light-mode .text-white {
+  color: #111827 !important;
+}
+
+.light-mode input,
+.light-mode select,
+.light-mode textarea {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  color: #111827 !important;
+}
+
+.light-mode .border-gray-800,
+.light-mode .border-white\/5,
+.light-mode .border-white\/8,
+.light-mode .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.light-mode .bg-dark-card\/30,
+.light-mode .bg-dark-card\/20,
+.light-mode .bg-black\/30,
+.light-mode .bg-black\/20,
+.light-mode .bg-gray-900\/40,
+.light-mode .bg-gray-800\/40 {
+  background-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.light-mode .bg-black\/40 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.light-mode li,
+.light-mode p,
+.light-mode span:not(.ai-gradient-text) {
+  color: #374151 !important;
+}
+
