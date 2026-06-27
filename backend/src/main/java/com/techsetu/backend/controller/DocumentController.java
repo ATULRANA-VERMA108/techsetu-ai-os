@@ -197,6 +197,83 @@ public class DocumentController {
         }
     }
 
+    @GetMapping("/{id}/summary")
+    public ResponseEntity<?> getDocumentSummary(
+            @PathVariable String id,
+            @RequestHeader(value = "X-Gemini-Key", required = false) String clientKey) {
+
+        String apiKey = (clientKey != null && !clientKey.trim().isEmpty()) ? clientKey : systemApiKey;
+        if (apiKey == null || apiKey.trim().isEmpty() || "your_gemini_api_key_here".equals(apiKey)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("error", "Gemini API Key is not configured. Please supply your key in Settings."));
+        }
+
+        Document document = documentRepository.findById(id).orElse(null);
+        if (document == null || !document.getUserEmail().equals(getCurrentUserEmail())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access Denied");
+        }
+
+        if (document.getSummary() != null && !document.getSummary().trim().isEmpty()) {
+            return ResponseEntity.ok(Map.of("summary", document.getSummary()));
+        }
+
+        try {
+            List<DocumentChunk> chunks = documentChunkRepository.findByDocumentId(id);
+            if (chunks.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(Map.of("error", "No text indexed for this document."));
+            }
+
+            chunks.sort(Comparator.comparingInt(DocumentChunk::getChunkIndex));
+
+            StringBuilder contentBuilder = new StringBuilder();
+            int maxChunksToCombine = Math.min(5, chunks.size());
+            for (int i = 0; i < maxChunksToCombine; i++) {
+                contentBuilder.append(chunks.get(i).getContent()).append("\n");
+            }
+
+            String prompt = "You are a specialized Document Summarization assistant.\n" +
+                    "Provide a comprehensive, clear, and well-structured summary of the following document. " +
+                    "Highlight the primary topics, main findings, and key takeaways using bullet points and bold text where appropriate. " +
+                    "Format the output using clear markdown.\n\n" +
+                    "DOCUMENT TEXT:\n" + contentBuilder.toString();
+
+            Map<String, Object> requestBody = new HashMap<>();
+            Map<String, Object> contentMap = new HashMap<>();
+            contentMap.put("role", "user");
+            contentMap.put("parts", List.of(Map.of("text", prompt)));
+            requestBody.put("contents", List.of(contentMap));
+
+            String jsonPayload = objectMapper.writeValueAsString(requestBody);
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey))
+                    .header("Content-Type", "application/json")
+                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload, StandardCharsets.UTF_8))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(Map.of("error", "Gemini API returned error: " + response.statusCode()));
+            }
+
+            JsonNode rootNode = objectMapper.readTree(response.body());
+            String summaryText = rootNode.path("candidates").get(0).path("content").path("parts").get(0).path("text").asText();
+
+            document.setSummary(summaryText);
+            documentRepository.save(document);
+
+            return ResponseEntity.ok(Map.of("summary", summaryText));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Document summary error: " + e.getMessage()));
+        }
+    }
+
     private List<DocumentChunk> findTopChunks(List<DocumentChunk> chunks, String query, int limit) {
         if (chunks.isEmpty()) return List.of();
 
@@ -245,6 +322,7 @@ public class DocumentController {
     }
 
     private int countOccurrences(String text, String word) {
+        if (word == null || word.trim().isEmpty()) return 0;
         int count = 0;
         int idx = 0;
         while ((idx = text.indexOf(word, idx)) != -1) {

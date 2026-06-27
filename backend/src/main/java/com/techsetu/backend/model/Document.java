@@ -11,6 +11,7 @@ public class Document {
     private String filename;
     private Long fileSize;
     private Date createdAt = new Date();
+    private String summary;
 
     public Document() {
     }
@@ -59,5 +60,13 @@ public class Document {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public String getSummary() {
+        return summary;
+    }
+
+    public void setSummary(String summary) {
+        this.summary = summary;
     }
 }
