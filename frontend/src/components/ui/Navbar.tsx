@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react'
-import { Sparkles, Bell, User, Sun, Moon, LogOut, Settings as SettingsIcon } from 'lucide-react'
+import { Sparkles, Bell, User, Sun, Moon, LogOut, Settings as SettingsIcon, Menu } from 'lucide-react'
 
 interface NavbarProps {
   userDisplayName?: string
@@ -7,6 +7,7 @@ interface NavbarProps {
   onLogout?: () => void
   onThemeToggle?: () => void
   currentTheme?: 'dark' | 'light'
+  onMenuClick?: () => void
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ 
@@ -14,7 +15,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onProfileClick, 
   onLogout,
   onThemeToggle,
-  currentTheme = 'dark'
+  currentTheme = 'dark',
+  onMenuClick
 }) => {
   const [showDropdown, setShowDropdown] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
@@ -43,13 +45,22 @@ export const Navbar: React.FC<NavbarProps> = ({
   const userEmail = localStorage.getItem('userEmail') || 'atulverma@gmail.com'
 
   return (
-    <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/8 backdrop-blur-md px-6 py-4 flex items-center justify-between">
+    <header className="sticky top-0 z-40 w-full glass-panel border-b border-white/8 backdrop-blur-md px-4 sm:px-6 py-4 flex items-center justify-between">
       {/* Brand / Logo */}
-      <div className="flex items-center gap-2.5">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-ai-blue to-ai-purple flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.3)]">
+      <div className="flex items-center gap-2">
+        {onMenuClick && (
+          <button 
+            onClick={onMenuClick}
+            className="md:hidden p-1.5 -ml-1 rounded-xl text-gray-400 hover:text-white hover:bg-white/5 transition-colors cursor-pointer"
+            aria-label="Toggle Navigation Sidebar"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-ai-blue to-ai-purple flex items-center justify-center shadow-[0_0_12px_rgba(139,92,246,0.3)] shrink-0">
           <Sparkles className="w-4 h-4 text-white" />
         </div>
-        <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
+        <span className="font-extrabold text-base sm:text-lg tracking-tight bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">
           TECHSETU <span className="ai-gradient-text">AI OS</span>
         </span>
       </div>

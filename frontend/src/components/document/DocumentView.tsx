@@ -40,6 +40,10 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
   const [summary, setSummary] = useState<string | null>(null)
   const [loadingSummary, setLoadingSummary] = useState(false)
 
+  // Mobile responsiveness states
+  const [showFileList, setShowFileList] = useState(false)
+  const [activeMobileTab, setActiveMobileTab] = useState<'summary' | 'qa'>('summary')
+
   const loadDocuments = async () => {
     try {
       const res = await axios.get(`${API_BASE_URL}/api/documents`, {
@@ -107,6 +111,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
       setDocuments([res.data, ...documents])
       setSelectedDocId(res.data.id)
       setQueryResult(null)
+      setShowFileList(false) // Close list on mobile
     } catch (err: any) {
       console.error('Error uploading document', err)
       const errorMsg = err.response?.data?.error || err.message || 'Upload failed.'
@@ -208,8 +213,20 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
   return (
     <div className="flex h-[calc(100vh-160px)] gap-6 w-full text-left relative overflow-hidden">
       
+      {/* Mobile document library backdrop */}
+      {showFileList && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 md:hidden"
+          onClick={() => setShowFileList(false)}
+        />
+      )}
+
       {/* Sidebar - Files List */}
-      <aside className="w-64 glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between shrink-0 bg-dark-card/20">
+      <aside className={`glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between shrink-0 transition-all duration-300
+        md:w-64 md:relative md:flex md:translate-x-0 md:z-auto md:bg-dark-card/20
+        fixed top-[73px] left-0 h-[calc(100vh-140px)] w-64 z-40 bg-gray-900/95 backdrop-blur-xl shadow-2xl
+        ${showFileList ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         <div className="flex flex-col gap-4 overflow-y-auto flex-1 pr-1">
           <h3 className="font-bold text-white text-xs uppercase tracking-wider">Document Library</h3>
 
@@ -238,8 +255,11 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
               return (
                 <div
                   key={d.id}
-                  onClick={() => setSelectedDocId(d.id)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
+                  onClick={() => {
+                    setSelectedDocId(d.id)
+                    setShowFileList(false) // Close list on mobile
+                  }}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all cursor-pointer border min-h-[40px] ${
                     isActive 
                       ? 'bg-gradient-to-r from-ai-blue/10 to-ai-purple/10 border-ai-blue/30 text-white font-semibold' 
                       : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white'
@@ -255,6 +275,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
                   <button 
                     onClick={(e) => handleDeleteDocument(e, d.id)}
                     className="text-gray-500 hover:text-red-400 p-1 rounded hover:bg-white/5 transition-all cursor-pointer"
+                    type="button"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -293,21 +314,57 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
             <div className="flex-1 flex flex-col min-h-0">
               
               {/* Header Info */}
-              <div className="mx-6 pt-5 pb-3 border-b border-gray-800/60 flex-shrink-0">
-                <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider">Active Document Reference</span>
-                <h4 className="text-sm font-bold text-white tracking-tight flex items-center gap-2 mt-1">
-                  <FileText className="w-4 h-4 text-ai-blue" />
-                  {selectedDoc.filename}
-                </h4>
+              <div className="mx-6 pt-5 pb-3 border-b border-gray-800/60 flex-shrink-0 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowFileList(!showFileList)}
+                    className="md:hidden p-2 rounded-xl bg-gray-800/60 border border-gray-700/60 text-gray-300 hover:text-white transition-colors cursor-pointer"
+                    title="Toggle Document Library"
+                    type="button"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </button>
+                  <div>
+                    <span className="text-[9px] font-bold text-gray-500 uppercase tracking-wider block">Active Document Reference</span>
+                    <h4 className="text-sm font-bold text-white tracking-tight flex items-center gap-2 mt-0.5">
+                      <FileText className="w-4 h-4 text-ai-blue hidden sm:inline" />
+                      {selectedDoc.filename}
+                    </h4>
+                  </div>
+                </div>
+              </div>
+
+              {/* Mobile Tab Selector */}
+              <div className="flex border-b border-white/5 lg:hidden px-6">
+                <button
+                  onClick={() => setActiveMobileTab('summary')}
+                  className={`flex-1 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+                    activeMobileTab === 'summary' ? 'border-ai-blue text-white' : 'border-transparent text-gray-500 hover:text-gray-300'
+                  }`}
+                  type="button"
+                >
+                  Document Summary
+                </button>
+                <button
+                  onClick={() => setActiveMobileTab('qa')}
+                  className={`flex-1 py-3 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+                    activeMobileTab === 'qa' ? 'border-ai-blue text-white' : 'border-transparent text-gray-500 hover:text-gray-300'
+                  }`}
+                  type="button"
+                >
+                  Ask AI (Q&A)
+                </button>
               </div>
 
               {/* Two-Column split screen */}
-              <div className="flex-1 flex gap-6 p-6 min-h-0 overflow-hidden">
+              <div className="flex-grow flex flex-col lg:flex-row gap-6 p-4 sm:p-6 min-h-0 overflow-hidden">
                 
-                {/* Left Column - Summary (55% width) */}
-                <div className="flex-[1.3] flex flex-col min-h-0 bg-dark-card/20 border border-white/5 rounded-xl p-5 overflow-y-auto">
+                {/* Left Column - Summary (55% width on desktop, full tab on mobile) */}
+                <div className={`flex-[1.3] flex-col min-h-0 bg-dark-card/20 border border-white/5 rounded-xl p-5 overflow-y-auto ${
+                  activeMobileTab === 'summary' ? 'flex' : 'hidden lg:flex'
+                }`}>
                   <div className="text-[10px] font-bold text-ai-blue uppercase tracking-wider mb-3 flex items-center gap-1.5 sticky top-0 bg-dark-card/25 backdrop-blur-sm py-1">
-                    <Sparkles className="w-3.5 h-3.5 text-ai-blue" /> Document Summary & Key Insights
+                    <Sparkles className="w-3.5 h-3.5 text-ai-blue animate-pulse" /> Document Summary & Key Insights
                   </div>
                   
                   {loadingSummary ? (
@@ -324,8 +381,10 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
                   )}
                 </div>
 
-                {/* Right Column - Q&A Chat (45% width) */}
-                <div className="flex-1 flex flex-col min-h-0 bg-black/10 border border-white/5 rounded-xl p-4">
+                {/* Right Column - Q&A Chat (45% width on desktop, full tab on mobile) */}
+                <div className={`flex-1 flex-col min-h-0 bg-black/10 border border-white/5 rounded-xl p-4 ${
+                  activeMobileTab === 'qa' ? 'flex' : 'hidden lg:flex'
+                }`}>
                   
                   {/* Answers scroll area */}
                   <div className="flex-1 overflow-y-auto pr-1 flex flex-col gap-4">
@@ -333,7 +392,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
                       <div className="flex-1 flex flex-col items-center justify-center gap-3 py-12">
                         <Loader type="spinner" size="md" />
                         <h4 className="text-xs font-bold text-white tracking-tight mt-3">Searching indexed vectors</h4>
-                        <p className="text-gray-550 text-[10px] text-center max-w-xs leading-relaxed">
+                        <p className="text-gray-555 text-[10px] text-center max-w-xs leading-relaxed">
                           TF-IDF search is matching term frequencies and querying Gemini.
                         </p>
                       </div>
@@ -341,7 +400,7 @@ export const DocumentView: React.FC<DocumentViewProps> = ({ token }) => {
                       <div className="flex flex-col gap-4">
                         {/* Answer Card */}
                         <div className="border border-white/5 bg-black/30 p-4 rounded-xl">
-                          <div className="text-[10px] font-bold text-gray-450 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                          <div className="text-[10px] font-bold text-gray-455 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                             <Sparkles className="w-3 h-3 text-ai-purple" /> AI Response
                           </div>
                           <p className="text-[11px] sm:text-xs text-gray-200 leading-relaxed whitespace-pre-wrap select-text">

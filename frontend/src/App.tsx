@@ -17,6 +17,7 @@ import { AlertTriangle } from 'lucide-react'
 function App() {
   const [view, setView] = useState<'landing' | 'app'>('landing')
   const [activeTab, setActiveTab] = useState('Dashboard')
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   
   // Auth state variables
   const [token, setToken] = useState<string | null>(localStorage.getItem('jwtToken'))
@@ -68,6 +69,11 @@ function App() {
     setView('landing')
   }
 
+  const handleTabChange = (tab: string) => {
+    setActiveTab(tab)
+    setIsMobileSidebarOpen(false)
+  }
+
   if (view === 'landing') {
     return (
       <>
@@ -87,15 +93,21 @@ function App() {
       <Navbar 
         userDisplayName={userName || 'Atul'} 
         onLogout={handleLogout} 
-        onProfileClick={() => setActiveTab('Settings')}
+        onProfileClick={() => handleTabChange('Settings')}
         onThemeToggle={toggleTheme}
         currentTheme={theme}
+        onMenuClick={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
       />
 
       {/* Main layout container with sidebar + main content */}
-      <div className="flex flex-1 relative">
+      <div className="flex flex-1 relative overflow-hidden">
         {/* 2. Sidebar */}
-        <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+        <Sidebar 
+          activeTab={activeTab} 
+          setActiveTab={handleTabChange} 
+          isMobileOpen={isMobileSidebarOpen}
+          onCloseMobile={() => setIsMobileSidebarOpen(false)}
+        />
 
         {/* 3. Main Content Panel */}
         <main className="flex-1 p-6 md:p-8 overflow-y-auto">
@@ -111,7 +123,7 @@ function App() {
 
           {/* Conditional Layout depending on active tab */}
           {activeTab === 'Dashboard' ? (
-            <DashboardView userName={userName} onTabChange={setActiveTab} />
+            <DashboardView userName={userName} onTabChange={handleTabChange} />
           ) : activeTab === 'AI Chat' ? (
             <ChatView token={token} />
           ) : activeTab === 'AI Recruitment' ? (

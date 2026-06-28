@@ -40,6 +40,9 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
   const [showApiKeySetting, setShowApiKeySetting] = useState(false)
   const [tempApiKey, setTempApiKey] = useState(localStorage.getItem('geminiApiKey') || '')
   const [savedApiKey, setSavedApiKey] = useState(localStorage.getItem('geminiApiKey') || '')
+  
+  // Mobile responsiveness states
+  const [showThreadList, setShowThreadList] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -96,6 +99,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
       })
       setConversations([res.data, ...conversations])
       setActiveConvId(res.data.id)
+      setShowThreadList(false) // Close list on mobile
     } catch (err) {
       console.error('Error creating conversation', err)
     }
@@ -218,7 +222,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
         
         return (
           <div key={index} className="my-4 rounded-xl overflow-hidden border border-gray-800 bg-black/60 text-left">
-            <div className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-800 text-[10px] text-gray-500 font-bold uppercase tracking-wider">
+            <div className="flex items-center justify-between px-4 py-2 bg-gray-900 border-b border-gray-800 text-[10px] text-gray-550 font-bold uppercase tracking-wider">
               <span>{language}</span>
               <button 
                 onClick={() => navigator.clipboard.writeText(code)}
@@ -266,20 +270,33 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
   return (
     <div className="flex h-[calc(100vh-160px)] gap-6 w-full text-left relative overflow-hidden">
       
+      {/* Mobile conversations thread backdrop */}
+      {showThreadList && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 md:hidden"
+          onClick={() => setShowThreadList(false)}
+        />
+      )}
+
       {/* Sidebar - Threads list */}
-      <aside className="w-64 glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between shrink-0 bg-dark-card/20">
+      <aside className={`glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between shrink-0 transition-all duration-300
+        md:w-64 md:relative md:flex md:translate-x-0 md:z-auto md:bg-dark-card/20
+        fixed top-[73px] left-0 h-[calc(100vh-140px)] w-64 z-40 bg-gray-900/95 backdrop-blur-xl shadow-2xl
+        ${showThreadList ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         <div className="flex flex-col gap-4 overflow-y-auto flex-1 pr-1">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-white text-xs uppercase tracking-wider">AI Conversations</h3>
             <button 
               onClick={() => setShowApiKeySetting(!showApiKeySetting)}
               className="text-gray-400 hover:text-white p-1 rounded hover:bg-white/5 transition-colors cursor-pointer"
+              type="button"
             >
               <Settings className="w-4 h-4" />
             </button>
           </div>
 
-          <Button variant="glass" className="w-full flex items-center justify-center gap-2 py-2" onClick={handleCreateConversation}>
+          <Button variant="glass" className="w-full flex items-center justify-center gap-2 py-2 min-h-[40px]" onClick={handleCreateConversation}>
             <Plus className="w-4 h-4" /> New Chat
           </Button>
 
@@ -289,8 +306,11 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
               return (
                 <div
                   key={c.id}
-                  onClick={() => setActiveConvId(c.id)}
-                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
+                  onClick={() => {
+                    setActiveConvId(c.id)
+                    setShowThreadList(false) // Close list on mobile
+                  }}
+                  className={`flex items-center justify-between px-3 py-2.5 rounded-xl transition-all cursor-pointer border min-h-[40px] ${
                     isActive 
                       ? 'bg-gradient-to-r from-ai-blue/10 to-ai-purple/10 border-ai-blue/30 text-white font-semibold' 
                       : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white'
@@ -303,6 +323,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
                   <button 
                     onClick={(e) => handleDeleteConversation(e, c.id)}
                     className="text-gray-500 hover:text-red-400 p-1 rounded hover:bg-white/5 transition-all cursor-pointer"
+                    type="button"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
@@ -329,6 +350,7 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
               <button 
                 onClick={saveApiKey}
                 className="p-2 rounded bg-gradient-to-tr from-ai-blue to-ai-purple text-white hover:opacity-90 cursor-pointer"
+                type="button"
               >
                 <Check className="w-3.5 h-3.5" />
               </button>
@@ -340,6 +362,30 @@ export const ChatView: React.FC<ChatViewProps> = ({ token }) => {
       {/* Main chat window area */}
       <section className="flex-1 glass-panel border border-white/5 rounded-2xl flex flex-col justify-between overflow-hidden bg-dark-card/10">
         
+        {/* Chat header (Visible on mobile for threads access) */}
+        <div className="px-6 py-4 border-b border-white/5 bg-dark-card/20 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setShowThreadList(!showThreadList)}
+              className="md:hidden p-2 rounded-xl bg-gray-800/60 border border-gray-700/60 text-gray-300 hover:text-white transition-colors cursor-pointer"
+              title="Toggle Chat Threads"
+              type="button"
+            >
+              <MessageSquare className="w-4 h-4" />
+            </button>
+            <div>
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                {conversations.find(c => c.id === activeConvId)?.title || 'AI Chat Assistant'}
+              </h4>
+              <span className="text-[10px] text-gray-500 font-semibold uppercase">Gemini Workspace</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+            <span className="text-[10px] text-gray-400 font-bold hidden sm:inline">Active Session</span>
+          </div>
+        </div>
+
         {/* Messages list scrollable container */}
         <div className="flex-1 overflow-y-auto p-6 flex flex-col">
           {loadingHistory ? (

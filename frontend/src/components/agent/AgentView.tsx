@@ -36,6 +36,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Mobile responsiveness states
+  const [showTaskList, setShowTaskList] = useState(false)
+
   const terminalEndRef = useRef<HTMLDivElement>(null)
 
   const templates = [
@@ -129,6 +132,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
       })
       setTasks([res.data, ...tasks])
       setActiveTaskId(res.data.id)
+      setShowTaskList(false) // Close list on mobile
     } catch (err: any) {
       console.error('Error starting agent', err)
       const errorMsg = err.response?.data?.error || err.message || 'Agent launch failed.'
@@ -176,8 +180,20 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
   return (
     <div className="flex h-[calc(100vh-160px)] gap-6 w-full text-left relative overflow-hidden">
       
+      {/* Mobile task list backdrop */}
+      {showTaskList && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-30 md:hidden"
+          onClick={() => setShowTaskList(false)}
+        />
+      )}
+
       {/* Sidebar - Task History */}
-      <aside className="w-64 glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between shrink-0 bg-dark-card/20">
+      <aside className={`glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between shrink-0 transition-all duration-300
+        md:w-64 md:relative md:flex md:translate-x-0 md:z-auto md:bg-dark-card/20
+        fixed top-[73px] left-0 h-[calc(100vh-140px)] w-64 z-40 bg-gray-900/95 backdrop-blur-xl shadow-2xl
+        ${showTaskList ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
+      `}>
         <div className="flex flex-col gap-4 overflow-y-auto flex-1 pr-1">
           <h3 className="font-bold text-white text-xs uppercase tracking-wider">Agent Missions</h3>
 
@@ -191,8 +207,9 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
                   onClick={() => {
                     setActiveTaskId(t.id)
                     setError(null)
+                    setShowTaskList(false) // Close list on mobile
                   }}
-                  className={`flex flex-col gap-1 px-3 py-2.5 rounded-xl transition-all cursor-pointer border ${
+                  className={`flex flex-col gap-1 px-3 py-2.5 rounded-xl transition-all cursor-pointer border min-h-[40px] ${
                     isActive 
                       ? 'bg-gradient-to-r from-ai-blue/10 to-ai-purple/10 border-ai-blue/30 text-white font-semibold' 
                       : 'border-transparent text-gray-400 hover:bg-white/5 hover:text-white'
@@ -208,12 +225,12 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
                     ) : t.status === 'COMPLETED' ? (
                       <>
                         <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0"></span>
-                        <span className="text-[9px] text-emerald-450 font-bold uppercase">Finished</span>
+                        <span className="text-[9px] text-emerald-455 font-bold uppercase">Finished</span>
                       </>
                     ) : (
                       <>
                         <span className="w-1.5 h-1.5 rounded-full bg-rose-500 shrink-0"></span>
-                        <span className="text-[9px] text-rose-450 font-bold uppercase">Failed</span>
+                        <span className="text-[9px] text-rose-455 font-bold uppercase">Failed</span>
                       </>
                     )}
                   </div>
@@ -238,11 +255,22 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
 
           {/* Goal Input form top banner */}
           <Card className="border border-white/5 bg-dark-card/20 p-5 text-left flex flex-col gap-4">
-            <div>
-              <h4 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-ai-purple animate-pulse" /> Launch New Agent
-              </h4>
-              <p className="text-gray-400 text-xs mt-0.5">Specify a complex mission goal. The agent will split it into sub-tasks and run them in the background.</p>
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h4 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-ai-purple animate-pulse" /> Launch New Agent
+                </h4>
+                <p className="text-gray-400 text-xs mt-0.5">Specify a complex mission goal. The agent will split it into sub-tasks and run them in the background.</p>
+              </div>
+              <button
+                onClick={() => setShowTaskList(!showTaskList)}
+                className="md:hidden px-3 py-1.5 rounded-lg bg-gray-850/80 border border-gray-700/60 text-xs font-bold text-gray-300 hover:text-white transition-colors cursor-pointer flex items-center gap-1.5"
+                title="Toggle Missions History"
+                type="button"
+              >
+                <Bot className="w-3.5 h-3.5" />
+                <span>Missions</span>
+              </button>
             </div>
             
             <form onSubmit={handleLaunchAgent} className="flex gap-3">
@@ -317,7 +345,7 @@ export const AgentView: React.FC<AgentViewProps> = ({ token }) => {
                           ) : st.status === 'RUNNING' ? (
                             <Loader type="spinner" size="sm" />
                           ) : (
-                            <Clock className="w-4 h-4 text-gray-600" />
+                            <Clock className="w-4 h-4 text-gray-650" />
                           )}
                         </div>
                       </div>
