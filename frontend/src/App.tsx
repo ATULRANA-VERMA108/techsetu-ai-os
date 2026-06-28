@@ -15,7 +15,7 @@ import { SettingsView } from './components/settings/SettingsView'
 import { AlertTriangle } from 'lucide-react'
 
 function App() {
-  const [view, setView] = useState<'landing' | 'app'>('landing')
+  const [view, setView] = useState<'landing' | 'app'>(localStorage.getItem('jwtToken') ? 'app' : 'landing')
   const [activeTab, setActiveTab] = useState('Dashboard')
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   
